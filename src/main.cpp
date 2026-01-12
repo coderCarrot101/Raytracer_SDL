@@ -144,3 +144,5 @@ void destroy_window(void)
    SDL_DestroyWindow(window);
    SDL_Quit();
 }
+
+//to compile: g++ src/main.cpp  -IC:/SDL3-3.4.0/x86_64-w64-mingw32/include  -LC:/SDL3-3.4.0/x86_64-w64-mingw32/lib  -lSDL3  -o sdl3test
