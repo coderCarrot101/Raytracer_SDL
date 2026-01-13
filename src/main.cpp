@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <iostream>
-
+#include <cstdint>
+/*
 // Window width and height
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -12,6 +13,8 @@ SDL_Renderer *renderer = NULL;
 int color[] = {255, 255, 255};
 bool pressed = false;
 
+//use SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, width, height) ??
+
 // Function prototypes
 int init_window(void);         // Create window and renderer
 void init_vars(void);          // Initialize variables
@@ -19,6 +22,8 @@ void process_event(void);      // Process events
 void update_screen();          // Update values
 void draw_screen(void);        // Draw screen
 void destroy_window(void);     // Destroy window
+
+
 
 int main(int argc, char* argv[])
 {
@@ -84,26 +89,27 @@ void process_event(void)
 
     SDL_Event event;
 
-    if (pressed == true) {
-      pressed = false;
-    }
-
     // Creating a loop to process user inputs
     while (SDL_PollEvent(&event)) {
-       switch (event.type) {
-          case SDL_EVENT_QUIT: // Logout action by the user (x button at the top right of the window)
+         switch (event.type) {
+            case SDL_EVENT_QUIT: // Logout action by the user (x button at the top right of the window)
                is_running = false; // Terminates the execution of the program main loop.
                break;
-
             case SDL_EVENT_KEY_DOWN: // Indicate that a key was pressed.
-               if(event.key.key == SDLK_ESCAPE) { // Indicates that the pressed key is the Esc key.
-                  is_running = false; // Terminates the execution of the program main loop.
-               }else if(event.key.key == SDLK_A) {
-                  pressed = true; 
-                  printf("\npressed\n");
+               switch(event.key.key) {
+                  case SDLK_ESCAPE:
+                     is_running = false; // Terminates the execution of the program main loop.
+                     break;
+                  case SDLK_A:
+                     pressed = true; 
+                     printf("\npressed\n");
+                     break;
                }
                break;
-       }
+            case SDL_EVENT_KEY_UP:
+               pressed = false;
+               break;
+         }
     }
 }
 
@@ -144,5 +150,77 @@ void destroy_window(void)
    SDL_DestroyWindow(window);
    SDL_Quit();
 }
+*/
+
+int main(int argc, char* argv[])
+{
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_Window* window = SDL_CreateWindow(
+        "Direct Pixel Manipulation",
+        800,
+        600,
+        0
+    );
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
+
+    const int W = 320;
+    const int H = 240;
+
+    SDL_Texture* texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        W,
+        H
+    );
+
+    bool running = true;
+    SDL_Event e;
+    int frame = 0;
+
+    while (running)
+    {
+        while (SDL_PollEvent(&e))
+        {
+            if (e.type == SDL_EVENT_QUIT)
+                running = false;
+        }
+
+        void* pixels;
+        int pitch;
+
+        SDL_LockTexture(texture, nullptr, &pixels, &pitch);
+        uint32_t* buffer = (uint32_t*)pixels;
+
+        for (int y = 0; y < H; y++) {
+            for (int x = 0; x < W; x++) {
+                uint8_t r = (x + frame) % 256;
+                uint8_t g = (y + frame) % 256;
+                uint8_t b = 128;
+
+                buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 16) | (g   << 8 ) | (b);
+            }
+        }
+
+        SDL_UnlockTexture(texture);
+
+        SDL_RenderClear(renderer);
+        SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+        SDL_RenderPresent(renderer);
+
+        frame++;
+        SDL_Delay(16);
+    }
+
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
+
 
 //to compile: g++ src/main.cpp  -IC:/SDL3-3.4.0/x86_64-w64-mingw32/include  -LC:/SDL3-3.4.0/x86_64-w64-mingw32/lib  -lSDL3  -o sdl3test
