@@ -156,13 +156,7 @@ int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_Window* window = SDL_CreateWindow(
-        "Direct Pixel Manipulation",
-        800,
-        600,
-        0
-    );
-
+    SDL_Window* window = SDL_CreateWindow("Direct Pixel Manipulation", 800, 600, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
     const int W = 320;
@@ -182,10 +176,9 @@ int main(int argc, char* argv[])
 
     while (running)
     {
-        while (SDL_PollEvent(&e))
-        {
-            if (e.type == SDL_EVENT_QUIT)
-                running = false;
+        while (SDL_PollEvent(&e)) {
+         if (e.type == SDL_EVENT_QUIT)
+            running = false;
         }
 
         void* pixels;
@@ -200,7 +193,7 @@ int main(int argc, char* argv[])
                 uint8_t g = (y + frame) % 256;
                 uint8_t b = 128;
 
-                buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 16) | (g   << 8 ) | (b);
+                buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 1) | (g   << 1 ) | (b);
             }
         }
 
