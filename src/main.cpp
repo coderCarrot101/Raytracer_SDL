@@ -189,9 +189,9 @@ int main(int argc, char* argv[])
 
         for (int y = 0; y < H; y++) {
             for (int x = 0; x < W; x++) {
-                uint8_t r = (x + frame) % 256;
-                uint8_t g = (y + frame) % 256;
-                uint8_t b = 128;
+               uint8_t r = 128;
+               uint8_t g = 0;
+               uint8_t b = 225;
 
                 buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 1) | (g   << 1 ) | (b);
             }
