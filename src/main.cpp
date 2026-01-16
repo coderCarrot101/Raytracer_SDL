@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdint>
 #include <array> /*added by the GOAT*/
+#include <cmath> /*added by the GOAT*/
 /*
 // Window width and height
 #define WINDOW_WIDTH 640
@@ -153,6 +154,23 @@ void destroy_window(void)
 }
 */
 
+float getMagnitude(std::array<float, 3> vector){
+   return sqrtf(powf(vector[0], 2) + powf(vector[1], 2) + powf(vector[2], 2));
+}
+
+std::array<float, 3> normalizeVector(std::array<float, 3> vector){
+   float magnitude = getMagnitude(vector);
+   return std::array<float, 3>{vector[0]/magnitude, vector[1]/magnitude, vector[2]/magnitude};
+}
+
+float dotProduct(std::array<float, 3> vector1, std::array<float, 3> vector2){
+   float output = 0;
+   for (int i = 0; i < 3; i++ ){
+      output += vector1[i] * vector2[i];
+   }
+   return output;
+}
+
 int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -208,6 +226,7 @@ int main(int argc, char* argv[])
         SDL_RenderTexture(renderer, texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);
 
+        std::cout << dotProduct(std::array<float, 3>{1, 0, 0}, std::array<float, 3>{0, 1, 0}) << " ";
         frame++;
         SDL_Delay(16);
     }
@@ -231,7 +250,9 @@ void raysRaytracer(int pixelX, int pixelY) {
     std::array<float, 3> lightPosition; /*conceptualized by the GOAT -- TEMPORARY, will add better lighting later*/ 
     float lightIntensity; /*conceptualized by the GOAT -- TEMPORARY, will add better lighting later*/
 
+    cameraPosition = {0, 0, 0};
+    imagePlanePointPreRotation = {(float)pixelX, 256, (float)pixelX};
+    rayPosition = imagePlanePointPreRotation;
 }
-
 
 //to compile: g++ src/main.cpp -IC:/SDL3-3.4.0/x86_64-w64-mingw32/include -LC:/SDL3-3.4.0/x86_64-w64-mingw32/lib -lSDL3 -o sdl3test
