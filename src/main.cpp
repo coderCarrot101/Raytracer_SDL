@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <array> /*added by the GOAT*/
 #include <cmath> /*added by the GOAT*/
-/*
+
 // Window width and height
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -26,27 +26,26 @@ void draw_screen(void);        // Draw screen
 void destroy_window(void);     // Destroy window
 
 
+void output(const SDL_Color& color, const std::array<int, 2>& location2D, SDL_Texture* texture, SDL_Renderer* renderer) {
+   const int W = 320;
+   const int H = 240;
+   const int x = static_cast<uint8_t>(location2D[0]);
+   const int y = static_cast<uint8_t>(location2D[1]);
 
-int main(int argc, char* argv[])
-{
-    printf("SUCCESS?");
-    // Create window and renderer
-    is_running = init_window();
+   void* pixels;
+   int pitch;
 
-    // Initialize variables
-    init_vars();
+   SDL_LockTexture(texture, nullptr, &pixels, &pitch);
+   uint32_t* buffer = (uint32_t*)pixels;
 
-    // Main loop
-    while (is_running) {
-       process_event();// Processing SDL events (Here keyboard inputs)
-       update_screen(); // Updating variables
-       draw_screen();   // Drawing objects on the window (Rendering)
-    }
+   buffer[y * (pitch / 4) + x] = (color.a << 24) | (color.r << 16) | (color.g << 8) | (color.b);;
 
-    // Destroy renderer and SDL window
-    destroy_window();
 
-    return 0;
+   SDL_UnlockTexture(texture);
+
+   SDL_RenderClear(renderer);
+   SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+   SDL_RenderPresent(renderer);
 }
 
 // Create window and renderer
@@ -152,7 +151,7 @@ void destroy_window(void)
    SDL_DestroyWindow(window);
    SDL_Quit();
 }
-*/
+
 
 float getMagnitude(std::array<float, 3> vector){
    return sqrtf(powf(vector[0], 2) + powf(vector[1], 2) + powf(vector[2], 2));
@@ -177,8 +176,6 @@ int main(int argc, char* argv[])
 
     SDL_Window* window = SDL_CreateWindow("Direct Pixel Manipulation", 800, 600, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-
-    std::array<int, 3> finalPixelColor; /*added by the GOAT*/
     
     const int W = 320;
     const int H = 240;
@@ -202,25 +199,18 @@ int main(int argc, char* argv[])
             running = false;
         }
 
-        void* pixels;
-        int pitch;
+         SDL_Color color{225, 0, 0, 255};
+         std::array<int, 2> position2D = {100, 100};
 
-        SDL_LockTexture(texture, nullptr, &pixels, &pitch);
-        uint32_t* buffer = (uint32_t*)pixels;
-
-        for (int y = 0; y < H; y++) {
-            for (int x = 0; x < W; x++) {
-               finalPixelColor = {255, 0, 25}; /*added by the GOAT*/
-
-               uint8_t r = finalPixelColor[0]; /*modified by the GOAT*/
-               uint8_t g = finalPixelColor[1]; /*modified by the GOAT*/
-               uint8_t b = finalPixelColor[2]; /*modified by the GOAT*/
-
-                buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 16) | (g   << 8) | (b);
+         for (int y = 0; y < H; y++) {
+            for (int x = 0; x < W - 20; x++) {
+               position2D[0] = x;
+               position2D[1] = y;
+               output(color, position2D, texture, renderer);
             }
-        }
+         }
 
-        SDL_UnlockTexture(texture);
+         output(color, position2D, texture, renderer);
 
         SDL_RenderClear(renderer);
         SDL_RenderTexture(renderer, texture, nullptr, nullptr);
