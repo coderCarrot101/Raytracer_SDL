@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include <cstdint>
+#include <array> /*added by the GOAT*/
 /*
 // Window width and height
 #define WINDOW_WIDTH 640
@@ -20,7 +21,7 @@ int init_window(void);         // Create window and renderer
 void init_vars(void);          // Initialize variables
 void process_event(void);      // Process events
 void update_screen();          // Update values
-void draw_screen(void);        // Draw screen test
+void draw_screen(void);        // Draw screen
 void destroy_window(void);     // Destroy window
 
 
@@ -159,6 +160,8 @@ int main(int argc, char* argv[])
     SDL_Window* window = SDL_CreateWindow("Direct Pixel Manipulation", 800, 600, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
+    std::array<int, 3> finalPixelColor; /*added by the GOAT*/
+    
     const int W = 320;
     const int H = 240;
 
@@ -189,11 +192,13 @@ int main(int argc, char* argv[])
 
         for (int y = 0; y < H; y++) {
             for (int x = 0; x < W; x++) {
-               uint8_t r = 128;
-               uint8_t g = 0;
-               uint8_t b = 225;
+               finalPixelColor = {255, 0, 25}; /*added by the GOAT*/
 
-                buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 1) | (g   << 1 ) | (b);
+               uint8_t r = finalPixelColor[0]; /*modified by the GOAT*/
+               uint8_t g = finalPixelColor[1]; /*modified by the GOAT*/
+               uint8_t b = finalPixelColor[2]; /*modified by the GOAT*/
+
+                buffer[y * (pitch / 4) + x] = (255 << 24) | (r   << 16) | (g   << 8) | (b);
             }
         }
 
@@ -215,5 +220,18 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+void raysRaytracer(int pixelX, int pixelY) {
+    // Placeholder for the GOAT's raytracer function
+    std::array<float, 3> cameraPosition; /*conceptualized by the GOAT*/
+    std::array<float, 3> cameraDirectionVector; /*conceptualized by the GOAT*/
+    std::array<float, 3> rayPosition; /*conceptualized by the GOAT*/
+    std::array<float, 3> rayDirectionVector; /*conceptualized by the GOAT*/
+    std::array<float, 3> imagePlanePointPreRotation; /*conceptualized by the GOAT*/
 
-//to compile: g++ src/main.cpp  -IC:/SDL3-3.4.0/x86_64-w64-mingw32/include  -LC:/SDL3-3.4.0/x86_64-w64-mingw32/lib  -lSDL3  -o sdl3test
+    std::array<float, 3> lightPosition; /*conceptualized by the GOAT -- TEMPORARY, will add better lighting later*/ 
+    float lightIntensity; /*conceptualized by the GOAT -- TEMPORARY, will add better lighting later*/
+
+}
+
+
+//to compile: g++ src/main.cpp -IC:/SDL3-3.4.0/x86_64-w64-mingw32/include -LC:/SDL3-3.4.0/x86_64-w64-mingw32/lib -lSDL3 -o sdl3test
