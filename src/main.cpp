@@ -20,7 +20,7 @@ int init_window(void);         // Create window and renderer
 void init_vars(void);          // Initialize variables
 void process_event(void);      // Process events
 void update_screen();          // Update values
-void draw_screen(void);        // Draw screen
+void draw_screen(void);        // Draw screen test
 void destroy_window(void);     // Destroy window
 
 
