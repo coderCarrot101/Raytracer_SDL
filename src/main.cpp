@@ -1,155 +1,89 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include <cstdint>
-#include <array> /*added by the GOAT*/
-#include <cmath> /*added by the GOAT*/
+#include <array>
+#include <cmath>
 
-// Window width and height
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
-// Global variables
 int is_running = false;        
-SDL_Window *window = NULL;     
-SDL_Renderer *renderer = NULL;
 int color[] = {255, 255, 255};
 bool pressed = false;
 
-//use SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, width, height) ??
+void pixel_out(const SDL_Color&, const std::array<int, 2>&, SDL_Texture*, SDL_Renderer*, void*, int);
+float getMagnitude(std::array<float, 3>);
+void raysRaytracer(int, int);
+std::array<float, 3> normalizeVector(std::array<float, 3>);
+float dotProduct(std::array<float, 3>, std::array<float, 3>);
 
-// Function prototypes
-int init_window(void);         // Create window and renderer
-void init_vars(void);          // Initialize variables
-void process_event(void);      // Process events
-void update_screen();          // Update values
-void draw_screen(void);        // Draw screen
-void destroy_window(void);     // Destroy window
+//all code should be ran from the MAIN CODE section
+int main(int argc, char* argv[]){
+   SDL_Init(SDL_INIT_VIDEO);
 
+   SDL_Window* window = SDL_CreateWindow("Direct Pixel Manipulation", 800, 600, 0);
+   SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
-void output(const SDL_Color& color, const std::array<int, 2>& location2D, SDL_Texture* texture, SDL_Renderer* renderer) {
    const int W = 320;
    const int H = 240;
-   const int x = static_cast<uint8_t>(location2D[0]);
-   const int y = static_cast<uint8_t>(location2D[1]);
 
+   SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, W, H);
+
+   bool running = true;
+   SDL_Event e;
+   int frame = 0;
    void* pixels;
    int pitch;
 
-   SDL_LockTexture(texture, nullptr, &pixels, &pitch);
-   uint32_t* buffer = (uint32_t*)pixels;
+   SDL_Color color{225, 0, 0, 255};
+   std::array<int, 2> position2D = {100, 100};
 
-   buffer[y * (pitch / 4) + x] = (color.a << 24) | (color.r << 16) | (color.g << 8) | (color.b);;
+   while (running) {
+      while (SDL_PollEvent(&e)) {
+         if (e.type == SDL_EVENT_QUIT)
+            running = false;
+      }
 
+      void* pixels;
+      int pitch;
 
-   SDL_UnlockTexture(texture);
+      SDL_LockTexture(texture, nullptr, &pixels, &pitch);
+      //if (SDL_LockTexture(texture, nullptr, &pixels, &pitch) != 0) {
+      //   printf("Lock Texture failed: %s\n", SDL_GetError()); 
+      //}
 
-   SDL_RenderClear(renderer);
-   SDL_RenderTexture(renderer, texture, nullptr, nullptr);
-   SDL_RenderPresent(renderer);
-}
-
-// Create window and renderer
-int init_window(void)
-{
-    // Initialize the SDL library.
-    if(SDL_Init(SDL_INIT_VIDEO) == false) {
-       SDL_Log("SDL init error: %s\n", SDL_GetError());
-       return false;
-    }
-
-    // Create a window with the specified dimensions and flags.
-    window = SDL_CreateWindow("SDL3 window", 640, 480, SDL_WINDOW_OPENGL);
-
-    // Check window
-    if(window == NULL) {
-       SDL_Log("Window creation error: %s\n", SDL_GetError());
-       return false;
-    }
-
-    // Create a 2D rendering context for the window.
-    renderer = SDL_CreateRenderer(window, NULL);
-
-    // Check renderer
-    if(renderer == NULL) {
-       SDL_Log("Renderer creation error: %s\n", SDL_GetError());
-       return false;
-    }
-
-    return true;
-}
-
-// Initialization function that runs only once at the beginning of the program
-void init_vars(void)
-{
-
-}
-
-// Function to control SDL events and process keyboard inputs
-void process_event(void)
-{
-
-    SDL_Event event;
-
-    // Creating a loop to process user inputs
-    while (SDL_PollEvent(&event)) {
-         switch (event.type) {
-            case SDL_EVENT_QUIT: // Logout action by the user (x button at the top right of the window)
-               is_running = false; // Terminates the execution of the program main loop.
-               break;
-            case SDL_EVENT_KEY_DOWN: // Indicate that a key was pressed.
-               switch(event.key.key) {
-                  case SDLK_ESCAPE:
-                     is_running = false; // Terminates the execution of the program main loop.
-                     break;
-                  case SDLK_A:
-                     pressed = true; 
-                     printf("\npressed\n");
-                     break;
-               }
-               break;
-            case SDL_EVENT_KEY_UP:
-               pressed = false;
-               break;
+      ///////////////////////// MAIN CODE /////////////////////////
+      for (int y = 0; y < H; y++) {
+         for (int x = 0; x < W; x++) {
+               std::array<int, 2> position2D = {x, y};
+               pixel_out(color, position2D, texture, renderer, pixels, pitch);
          }
-    }
-}
+      }
+      ////////////////////////////////////////////////////////////
 
-// Updates objects in the main window
-void update_screen(void)
-{
-
-   if (pressed == true) {
-      color[0] = 0;
-   } else {
-      color[0] = 225;
+      SDL_UnlockTexture(texture);
+      SDL_RenderClear(renderer);
+      //if (SDL_RenderClear(renderer) != 0) {
+       //  printf("Clear Render failed: %s\n", SDL_GetError()); 
+      //}
+      SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+      //if (SDL_RenderTexture(renderer, texture, nullptr, nullptr) != 0) {
+      //   printf("Render Texture failed: %s\n", SDL_GetError()); 
+      //}
+      SDL_RenderPresent(renderer);
+      //if (SDL_RenderPresent(renderer) != 0) {
+      //   printf("Present Render failed: %s\n", SDL_GetError()); 
+      //}
+      SDL_Delay(16);
    }
-   printf("\n%d", color[0]);
-}
 
-// Render function used to draw game objects in the main window
-void draw_screen(void)
-{
-   
-   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Set the color used for drawing operations.
-   SDL_RenderClear(renderer); // Clear the current rendering target with the drawing color.
 
-   // Setting rectangle dimensions
-   SDL_FRect frect = { (WINDOW_WIDTH-160)/2, (WINDOW_HEIGHT-120)/2, 160, 120 };
-   SDL_SetRenderDrawColor(renderer, color[0], color[1], color[2], 255); // Set the color to fill rectangle.
-   SDL_RenderFillRect(renderer, &frect); // Fill a rectangle on the current rendering target with the drawing color at subpixel precision.
-
-   // Loading all objects drawn one by one to the back buffer to the front buffer at once and loading them onto the screen
-   // This process prevents each drawn object from being displayed on the screen one by one.
-   SDL_RenderPresent(renderer); // Update on screen all operations performed since the previous call
-}
-
-// Destroy Renderer and SDL window, exit from SDL3
-void destroy_window(void)
-{
-
+   SDL_DestroyTexture(texture);
    SDL_DestroyRenderer(renderer);
    SDL_DestroyWindow(window);
    SDL_Quit();
+
+   return 0;
 }
 
 
@@ -170,79 +104,52 @@ float dotProduct(std::array<float, 3> vector1, std::array<float, 3> vector2){
    return output;
 }
 
-int main(int argc, char* argv[])
-{
-    SDL_Init(SDL_INIT_VIDEO);
-
-    SDL_Window* window = SDL_CreateWindow("Direct Pixel Manipulation", 800, 600, 0);
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-    
-    const int W = 320;
-    const int H = 240;
-
-    SDL_Texture* texture = SDL_CreateTexture(
-        renderer,
-        SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING,
-        W,
-        H
-    );
-
-    bool running = true;
-    SDL_Event e;
-    int frame = 0;
-
-    while (running)
-    {
-        while (SDL_PollEvent(&e)) {
-         if (e.type == SDL_EVENT_QUIT)
-            running = false;
-        }
-
-         SDL_Color color{225, 0, 0, 255};
-         std::array<int, 2> position2D = {100, 100};
-
-         for (int y = 0; y < H; y++) {
-            for (int x = 0; x < W - 20; x++) {
-               position2D[0] = x;
-               position2D[1] = y;
-               output(color, position2D, texture, renderer);
-            }
-         }
-
-         output(color, position2D, texture, renderer);
-
-        SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, texture, nullptr, nullptr);
-        SDL_RenderPresent(renderer);
-
-        std::cout << dotProduct(std::array<float, 3>{1, 0, 0}, std::array<float, 3>{0, 1, 0}) << " ";
-        frame++;
-        SDL_Delay(16);
-    }
-
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-
-    return 0;
-}
-
 void raysRaytracer(int pixelX, int pixelY) {
-    // Placeholder for the GOAT's raytracer function
-    std::array<float, 3> cameraPosition; /*conceptualized by the GOAT*/
-    std::array<float, 3> cameraDirectionVector; /*conceptualized by the GOAT*/
-    std::array<float, 3> rayPosition; /*conceptualized by the GOAT*/
-    std::array<float, 3> rayDirectionVector; /*conceptualized by the GOAT*/
-    std::array<float, 3> imagePlanePointPreRotation; /*conceptualized by the GOAT*/
+    // Placeholder for the GOAT's raytracer function - Ray
+    std::array<float, 3> cameraPosition; 
+    std::array<float, 3> cameraDirectionVector;
+    std::array<float, 3> rayPosition;
+    std::array<float, 3> rayDirectionVector;
+    std::array<float, 3> imagePlanePointPreRotation;
 
-    std::array<float, 3> lightPosition; /*conceptualized by the GOAT -- TEMPORARY, will add better lighting later*/ 
-    float lightIntensity; /*conceptualized by the GOAT -- TEMPORARY, will add better lighting later*/
+    std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
+    float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
 
     cameraPosition = {0, 0, 0};
     imagePlanePointPreRotation = {(float)pixelX, 256, (float)pixelX};
     rayPosition = imagePlanePointPreRotation;
 }
 
+//takes the position and color of a pixel and outputs to the screen
+void pixel_out(const SDL_Color& color, const std::array<int, 2>& location2D, SDL_Texture* texture, SDL_Renderer* renderer, void* pixels, int pitch) {
+   
+   const int x = location2D[0];
+   const int y = location2D[1];
+
+   uint32_t* buffer = (uint32_t*)pixels;
+
+   buffer[y * (pitch / 4) + x] = (color.a << 24) | (color.r << 16) | (color.g << 8) | (color.b);;
+
+
+
+}
+
+
+
 //to compile: g++ src/main.cpp -IC:/SDL3-3.4.0/x86_64-w64-mingw32/include -LC:/SDL3-3.4.0/x86_64-w64-mingw32/lib -lSDL3 -o sdl3test
+
+/*
+recomended standards:
+function names: my_function
+variable names: myVariable
+Constant names: MYCONSTANT
+
+Always check return values:
+example:
+
+if (SDL_LockTexture(texture, nullptr, &pixels, &pitch) != 0) {
+   printf("Lock failed: %s", SDL_GetError());
+}
+*/
+
+
