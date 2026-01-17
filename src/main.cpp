@@ -17,7 +17,7 @@ void raysRaytracer(int, int);
 std::array<float, 3> normalizeVector(std::array<float, 3>);
 float dotProduct(std::array<float, 3>, std::array<float, 3>);
 
-//all code should be ran from the MAIN CODE section
+//all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
    SDL_Init(SDL_INIT_VIDEO);
 
@@ -120,7 +120,7 @@ void raysRaytracer(int pixelX, int pixelY) {
     rayPosition = imagePlanePointPreRotation;
 }
 
-//takes the position and color of a pixel and outputs to the screen
+//takes the position and color of a pixel and outputs to the screen - Elijah
 void pixel_out(const SDL_Color& color, const std::array<int, 2>& location2D, SDL_Texture* texture, SDL_Renderer* renderer, void* pixels, int pitch) {
    
    const int x = location2D[0];
