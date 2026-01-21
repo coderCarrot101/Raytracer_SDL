@@ -122,6 +122,35 @@ float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
    return output;
 }
 
+std::array<float, 3> get_intersection_point(std::array<float, 3> vector, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+   return std::array<float, 3>{multiply_vector_by_scalar(vector, dot_product(trianglePoints[1], triangleNormal)/dot_product(vector, triangleNormal))};
+}
+
+bool inside_triangle(std::array<float, 3> vector, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+   std::array<float, 3> intersectionPoint = get_intersection_point(vector, triangleNormal, trianglePoints);
+
+   std::array<float, 3> e0 = subtract_vectors(trianglePoints[1], trianglePoints[0]);
+   std::array<float, 3> e1 = subtract_vectors(trianglePoints[2], trianglePoints[0]);
+   std::array<float, 3> v = subtract_vectors(intersectionPoint, trianglePoints[0]);
+
+   float d00 = dot_product(e0, e0);
+   float d01 = dot_product(e0, e1);
+   float d11 = dot_product(e1, e1);
+   float d20 = dot_product(v, e0);
+   float d21 = dot_product(v, e1);
+
+   float denom = (d00 * d11) - powf(d01, 2);
+   float beta = ((d11 * d20) - (d01 * d21))/denom;
+   float gamma = ((d00 * d21) - (d01 * d20))/denom;
+   float alpha = 1 - beta - gamma;
+
+   if (alpha >= 0 && beta >= 0 && gamma >= 0){
+      return true;
+   } else {
+      return false;
+   }
+}
+
 SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
     std::array<float, 3> cameraPosition; 
@@ -140,7 +169,18 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
-    colorRGB = {(unsigned char)((pixelX)*255), (unsigned char)((pixelY)*255), 0, 255};
+    /*TEMP TRIANGLE*/
+    std::array<std::array<float, 3>, 3> tringlePoints = {{
+      {{-1, 1, -1}},
+      {{0, 1, 1}},
+      {{1, 1, -1}}
+    }};
+
+    if (inside_triangle(rayDirectionVector, {0, -1, 0}, tringlePoints)){
+      colorRGB = {255, 0, 0, 255};
+    } else {
+      colorRGB = {0, 67, 67, 255};
+    }
     return colorRGB;
 }
 
