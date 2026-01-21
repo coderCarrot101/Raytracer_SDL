@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <array>
 #include <cmath>
+#include <string.h>
+#include "parser.h"
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -16,6 +18,9 @@ float get_magnitude(std::array<float, 3>);
 SDL_Color rays_raytracer(int, int, int, int);
 std::array<float, 3> normalize_vector(std::array<float, 3>);
 float dot_product(std::array<float, 3>, std::array<float, 3>);
+
+
+//TODO: be able to convert obj files and read em.
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
@@ -38,6 +43,9 @@ int main(int argc, char* argv[]){
    SDL_Color color{225, 0, 0, 255};
    std::array<int, 2> position2D = {100, 100};
 
+   /*currently crashes program, idk why*/
+   //load_object("C:\\Users\\s654081\\Downloads\\airboat.obj");
+
    while (running) {
       while (SDL_PollEvent(&e)) {
          if (e.type == SDL_EVENT_QUIT)
@@ -53,6 +61,7 @@ int main(int argc, char* argv[]){
       //}
 
       ///////////////////////// MAIN CODE /////////////////////////
+
       for (int y = 0; y < H; y++) {
          for (int x = 0; x < W; x++) {
                std::array<int, 2> position2D = {x, y};
@@ -167,6 +176,7 @@ recomended standards:
 function names: my_function
 variable names: myVariable
 Constant names: MYCONSTANT
+Struct names: Vertex
 
 Always check return values:
 example:
@@ -175,5 +185,3 @@ if (SDL_LockTexture(texture, nullptr, &pixels, &pitch) != 0) {
    printf("Lock failed: %s", SDL_GetError());
 }
 */
-
-
