@@ -13,7 +13,7 @@ bool pressed = false;
 
 void pixel_out(const SDL_Color&, const std::array<int, 2>&, SDL_Texture*, SDL_Renderer*, void*, int);
 float get_magnitude(std::array<float, 3>);
-void rays_raytracer(int, int);
+std::array<int, 3> rays_raytracer(int, int, int, int);
 std::array<float, 3> normalize_vector(std::array<float, 3>);
 float dot_product(std::array<float, 3>, std::array<float, 3>);
 
@@ -96,6 +96,23 @@ std::array<float, 3> normalize_vector(std::array<float, 3> vector){
    return std::array<float, 3>{vector[0]/magnitude, vector[1]/magnitude, vector[2]/magnitude};
 }
 
+std::array<float, 3> add_vectors(std::array<float, 3> vector1, std::array<float, 3> vector2){
+   return std::array<float, 3>{vector1[0] + vector2[0], vector1[1] + vector2[1], vector1[2] + vector2[2]};
+}
+
+std::array<float, 3> subtract_vectors(std::array<float, 3> vector1, std::array<float, 3> vector2){
+   return std::array<float, 3>{vector1[0] - vector2[0], vector1[1] - vector2[1], vector1[2] - vector2[2]};
+}
+
+std::array<float, 3> multiply_vector_by_scalar(std::array<float, 3> vector, float scalar){
+   return std::array<float, 3>{vector[0]*scalar, vector[1]*scalar, vector[2]*scalar};
+}
+
+std::array<float, 3> divide_vector_by_scalar(std::array<float, 3> vector, float scalar){
+   return std::array<float, 3>{vector[0]/scalar, vector[1]/scalar, vector[2]/scalar};
+}
+
+
 float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
    float output = 0;
    for (int i = 0; i < 3; i++ ){
@@ -104,20 +121,26 @@ float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
    return output;
 }
 
-void rays_raytracer(int pixelX, int pixelY) {
+std::array<int, 3> rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
     std::array<float, 3> cameraPosition; 
     std::array<float, 3> cameraDirectionVector;
     std::array<float, 3> rayPosition;
     std::array<float, 3> rayDirectionVector;
     std::array<float, 3> imagePlanePointPreRotation;
+    std::array<int, 3> colorRGB;
+    float intersectDistance;
 
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
     float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
 
     cameraPosition = {0, 0, 0};
     imagePlanePointPreRotation = {(float)pixelX, 256, (float)pixelX};
-    rayPosition = imagePlanePointPreRotation;
+    rayPosition = cameraPosition;
+    rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
+
+    colorRGB = {255, 255, 255};
+    return colorRGB;
 }
 
 //takes the position and color of a pixel and outputs to the screen - Elijah
