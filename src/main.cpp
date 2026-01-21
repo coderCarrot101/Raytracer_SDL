@@ -12,10 +12,10 @@ int color[] = {255, 255, 255};
 bool pressed = false;
 
 void pixel_out(const SDL_Color&, const std::array<int, 2>&, SDL_Texture*, SDL_Renderer*, void*, int);
-float getMagnitude(std::array<float, 3>);
-void raysRaytracer(int, int);
-std::array<float, 3> normalizeVector(std::array<float, 3>);
-float dotProduct(std::array<float, 3>, std::array<float, 3>);
+float get_magnitude(std::array<float, 3>);
+void rays_raytracer(int, int);
+std::array<float, 3> normalize_vector(std::array<float, 3>);
+float dot_product(std::array<float, 3>, std::array<float, 3>);
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
@@ -87,16 +87,16 @@ int main(int argc, char* argv[]){
 }
 
 
-float getMagnitude(std::array<float, 3> vector){
+float get_magnitude(std::array<float, 3> vector){
    return sqrtf(powf(vector[0], 2) + powf(vector[1], 2) + powf(vector[2], 2));
 }
 
-std::array<float, 3> normalizeVector(std::array<float, 3> vector){
-   float magnitude = getMagnitude(vector);
+std::array<float, 3> normalize_vector(std::array<float, 3> vector){
+   float magnitude = get_magnitude(vector);
    return std::array<float, 3>{vector[0]/magnitude, vector[1]/magnitude, vector[2]/magnitude};
 }
 
-float dotProduct(std::array<float, 3> vector1, std::array<float, 3> vector2){
+float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
    float output = 0;
    for (int i = 0; i < 3; i++ ){
       output += vector1[i] * vector2[i];
@@ -104,7 +104,7 @@ float dotProduct(std::array<float, 3> vector1, std::array<float, 3> vector2){
    return output;
 }
 
-void raysRaytracer(int pixelX, int pixelY) {
+void rays_raytracer(int pixelX, int pixelY) {
     // Placeholder for the GOAT's raytracer function - Ray
     std::array<float, 3> cameraPosition; 
     std::array<float, 3> cameraDirectionVector;
