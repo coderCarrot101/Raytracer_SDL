@@ -13,7 +13,7 @@ bool pressed = false;
 
 void pixel_out(const SDL_Color&, const std::array<int, 2>&, SDL_Texture*, SDL_Renderer*, void*, int);
 float get_magnitude(std::array<float, 3>);
-std::array<int, 3> rays_raytracer(int, int, int, int);
+SDL_Color rays_raytracer(int, int, int, int);
 std::array<float, 3> normalize_vector(std::array<float, 3>);
 float dot_product(std::array<float, 3>, std::array<float, 3>);
 
@@ -56,6 +56,7 @@ int main(int argc, char* argv[]){
       for (int y = 0; y < H; y++) {
          for (int x = 0; x < W; x++) {
                std::array<int, 2> position2D = {x, y};
+               color = rays_raytracer(x, y, W, H);
                pixel_out(color, position2D, texture, renderer, pixels, pitch);
          }
       }
@@ -121,14 +122,14 @@ float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
    return output;
 }
 
-std::array<int, 3> rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
+SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
     std::array<float, 3> cameraPosition; 
     std::array<float, 3> cameraDirectionVector;
     std::array<float, 3> rayPosition;
     std::array<float, 3> rayDirectionVector;
     std::array<float, 3> imagePlanePointPreRotation;
-    std::array<int, 3> colorRGB;
+    SDL_Color colorRGB;
     float intersectDistance;
 
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
@@ -139,7 +140,7 @@ std::array<int, 3> rays_raytracer(int pixelX, int pixelY, int screenWidth, int s
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
-    colorRGB = {255, 255, 255};
+    colorRGB = {(unsigned char)((pixelX)*255), (unsigned char)((pixelY)*255), 0, 255};
     return colorRGB;
 }
 
