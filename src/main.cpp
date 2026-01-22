@@ -44,7 +44,6 @@ int main(int argc, char* argv[]){
    SDL_Color color{225, 0, 0, 255};
    std::array<int, 2> position2D = {100, 100};
 
-   /*currently crashes program, idk why*/
    load_object("testcube.obj");
 
    while (running) {

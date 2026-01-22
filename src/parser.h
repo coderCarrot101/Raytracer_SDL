@@ -13,7 +13,13 @@
 
 
 struct ObjectData {
+    std::vector<std::array<float, 4>> vertices;
     std::vector<std::array<float, 3>> vertex_normals;
+    //std::vector<std::array<std::array<float, 3>, 3>> faces;
+    std::vector<std::array<float, 3>> texture_coordinates;
+
+    std::vector<std::array<float, 3>> space_vertices;
+    //std::vector<int, CAPACITY> Line_element;
 };
 
 
@@ -33,15 +39,21 @@ ObjectData load_object(const char* path) {
     }
 
     printf("opened %s\n", path);
-
+    
     char lineHeader[128];
     while (fscanf(file, "%s", lineHeader) != EOF) {
         if (strcmp(lineHeader, "v") == 0) {
+            object.vertices.resize(size++);
+            fscanf(file, "%f %f %f\n", &object.vertices[size][0], &object.vertices[size][1], &object.vertices[size][2]);
+            printf("v %f %f %f\n", object.vertices[size][0], object.vertices[size][0], object.vertices[size][0]);
+
+        }/*if (strcmp(lineHeader, "vn") == 0) {
+            //BAD BAD BAD WILL CRASH       V
             object.vertex_normals.resize(size++);
             fscanf(file, "%f %f %f\n", &object.vertex_normals[size][0], &object.vertex_normals[size][1], &object.vertex_normals[size][2]);
             printf("v %f %f %f\n", object.vertex_normals[size][0], object.vertex_normals[size][0], object.vertex_normals[size][0]);
 
-        } else {
+        }*/ else {
             // Ignore other line types (vn, vt, #, etc.)
             char skipBuffer[1000];
             fgets(skipBuffer, 1000, file); // Skip the rest of the line
