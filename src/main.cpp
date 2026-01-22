@@ -18,6 +18,7 @@ float get_magnitude(std::array<float, 3>);
 SDL_Color rays_raytracer(int, int, int, int);
 std::array<float, 3> normalize_vector(std::array<float, 3>);
 float dot_product(std::array<float, 3>, std::array<float, 3>);
+std::array<float, 3> cross_product(std::array<float, 3>, std::array<float, 3>);
 
 
 //TODO: be able to convert obj files and read em.
@@ -132,7 +133,7 @@ float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
 }
 
 std::array<float, 3> cross_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
-
+   return {(vector1[1]*vector2[2])-(vector1[2]*vector2[1]), (vector1[2]*vector2[0])-(vector1[0]*vector2[2]), (vector1[0]*vector2[1])-(vector1[1]*vector2[0])};
 }
 
 std::array<float, 3> get_intersection_point(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
@@ -165,11 +166,8 @@ bool inside_triangle(std::array<float, 3> rayOrigin, std::array<float, 3> rayDir
 }
 
 bool moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
-   std::array<float, 3> intersectionPoint = get_intersection_point(rayOrigin, rayDirection, triangleNormal, trianglePoints);
-
    std::array<float, 3> e1 = subtract_vectors(trianglePoints[1], trianglePoints[0]);
    std::array<float, 3> e2 = subtract_vectors(trianglePoints[2], trianglePoints[0]);
-   std::array<float, 3> v = subtract_vectors(intersectionPoint, trianglePoints[0]);
 
    std::array<float, 3> p = cross_product(rayDirection, e2);
    float det = dot_product(e1, p);
@@ -181,6 +179,8 @@ bool moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDir
 
    float vFloat = dot_product(rayDirection, q)/det;
    float tFloat = dot_product(e2, q)/det;
+
+   /*std::array<float, 3> intersectionPoint = add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, tFloat));*/
 
    if (uFloat >= 0 && vFloat >= 0 && ((uFloat+vFloat) <= 1) && tFloat > 0){
       return true;
@@ -202,8 +202,8 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
     float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
 
-    cameraPosition = {0, 0, 0};
-    imagePlanePointPreRotation = {(float)pixelX, 256, (float)pixelX};
+    cameraPosition = {0, 0, 1};
+    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 32, -((float)pixelY-(screenHeight/2))};
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
@@ -214,10 +214,10 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
       {{1, 1, -1}}
     }};
 
-    if (inside_triangle(rayPosition, rayDirectionVector, {0, -1, 0}, tringlePoints)){
+    if (moller_trumbore(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints)){
       colorRGB = {255, 0, 0, 255};
     } else {
-      colorRGB = {0, 67, 67, 255};
+      colorRGB = {0, 0, 0, 255};
     }
     return colorRGB;
 }
