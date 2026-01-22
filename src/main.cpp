@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
    std::array<int, 2> position2D = {100, 100};
 
    /*currently crashes program, idk why*/
-   load_object("C:\\Users\\s654081\\Downloads\\testcube.obj");
+   load_object("testcube.obj");
 
    while (running) {
       while (SDL_PollEvent(&e)) {
