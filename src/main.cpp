@@ -27,7 +27,7 @@ std::array<float, 3> cross_product(std::array<float, 3>, std::array<float, 3>);
 int main(int argc, char* argv[]){
    SDL_Init(SDL_INIT_VIDEO);
 
-   SDL_Window* window = SDL_CreateWindow("Direct Pixel Manipulation", 800, 600, 0);
+   SDL_Window* window = SDL_CreateWindow("Ray's GOATed Raytracer That Everyone Likes and Thinks is Cool", 800, 600, 0);
    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
    const int W = 320;
@@ -195,7 +195,7 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::array<float, 3> rayPosition;
     std::array<float, 3> rayDirectionVector;
     std::array<float, 3> imagePlanePointPreRotation;
-    SDL_Color colorRGB;
+    std::array<float, 3> colorRGB;
     float intersectDistance;
 
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
@@ -213,12 +213,14 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
       {{1, 1, -1}}
     }};
 
+    intersectDistance = get_magnitude(get_intersection_point(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints));
+
     if (moller_trumbore(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints)){
-      colorRGB = {255, 0, 0, 255};
+      colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
     } else {
-      colorRGB = {0, 0, 0, 255};
+      colorRGB = {0, 0, 0};
     }
-    return colorRGB;
+    return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
 }
 
 //takes the position and color of a pixel and outputs to the screen - Elijah
