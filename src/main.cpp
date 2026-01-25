@@ -22,13 +22,12 @@ float dot_product(std::array<float, 3>, std::array<float, 3>);
 std::array<float, 3> cross_product(std::array<float, 3>, std::array<float, 3>);
 
 
-//TODO: be able to convert obj files and read em.
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
    SDL_Init(SDL_INIT_VIDEO);
 
-   SDL_Window* window = SDL_CreateWindow("Ray's GOATed Raytracer That Everyone Likes and Thinks is Cool", 800, 600, 0);
+   SDL_Window* window = SDL_CreateWindow("Amazing window that is only possible because Elijah is the GOAT", 800, 600, 0);
    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
    const int W = 320;
@@ -45,7 +44,9 @@ int main(int argc, char* argv[]){
    SDL_Color color{225, 0, 0, 255};
    std::array<int, 2> position2D = {100, 100};
 
-   load_object("testcube.obj");
+   ObjectData Carrot = load_object("carrot.obj", 0, 100); // add angle? texture? lightSource?
+   ObjectData Cube = load_object("testcube.obj", 100, 0);
+   
 
    while (running) {
       while (SDL_PollEvent(&e)) {
@@ -216,4 +217,15 @@ example:
 if (SDL_LockTexture(texture, nullptr, &pixels, &pitch) != 0) {
    printf("Lock failed: %s", SDL_GetError());
 }
+*/
+
+/*
+brainstorming:
+
+to make it easier to develop we could add commands like
+move camera x 50
+set camera x 50
+set cube y 50
+rotate camera y 180
+rotate cube x 200
 */
