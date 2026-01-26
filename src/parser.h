@@ -32,7 +32,7 @@ struct ObjectData {
         List of geometric vertices, with (x, y, z, [w]) coordinates, w is optional and defaults to 1.0.
         v 0.123 0.234 0.345 1.0
     */
-    std::vector<std::array<float, 4>> vertices;//Wikepedia says there's a fourth element but I don't see one. - Elijah
+    std::vector<std::array<float, 3>> vertices;//Wikepedia says there's a fourth element but I don't see one. - Elijah
     int verticesSize = 0; 
 
     /*

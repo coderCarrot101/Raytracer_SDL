@@ -21,7 +21,8 @@ std::array<float, 3> normalize_vector(std::array<float, 3>);
 float dot_product(std::array<float, 3>, std::array<float, 3>);
 std::array<float, 3> cross_product(std::array<float, 3>, std::array<float, 3>);
 
-
+ObjectData Carrot;
+ObjectData Cube;
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
@@ -44,9 +45,9 @@ int main(int argc, char* argv[]){
    SDL_Color color{225, 0, 0, 255};
    std::array<int, 2> position2D = {100, 100};
 
-   ObjectData Carrot = load_object("carrot.obj", 0, 100); // add angle? texture? lightSource?
-   ObjectData Cube = load_object("testcube.obj", 100, 0);
-   
+   Carrot = load_object("carrot.obj", 0, 100); // add angle? texture? lightSource?
+   Cube = load_object("testcube.obj", 100, 0);
+
 
    while (running) {
       while (SDL_PollEvent(&e)) {
