@@ -21,7 +21,7 @@ std::array<float, 3> normalize_vector(std::array<float, 3>);
 float dot_product(std::array<float, 3>, std::array<float, 3>);
 std::array<float, 3> cross_product(std::array<float, 3>, std::array<float, 3>);
 
-
+ObjectData Cube = load_object("testcube.obj", 100, 0);
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
@@ -45,7 +45,6 @@ int main(int argc, char* argv[]){
    std::array<int, 2> position2D = {100, 100};
 
    ObjectData Carrot = load_object("carrot.obj", 0, 100); // add angle? texture? lightSource?
-   ObjectData Cube = load_object("testcube.obj", 100, 0);
    
 
    while (running) {
@@ -171,9 +170,9 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
 
     /*TEMP TRIANGLE*/
     std::array<std::array<float, 3>, 3> tringlePoints = {{
-      {{-1, 1, -1}},
-      {{0, 1, 1}},
-      {{1, 1, -1}}
+      Cube.vertices[0],
+      Cube.vertices[1],
+      Cube.vertices[2]
     }};
 
     intersectDistance = get_magnitude(get_intersection_point(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints));
