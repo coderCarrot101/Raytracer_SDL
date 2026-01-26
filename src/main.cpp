@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
    SDL_Color color{225, 0, 0, 255};
    std::array<int, 2> position2D = {100, 100};
 
-   load_object("testcube.obj");
+   //load_object("testcube.obj");
 
    while (running) {
       while (SDL_PollEvent(&e)) {
