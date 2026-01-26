@@ -172,10 +172,14 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
 
     /*TEMP TRIANGLE*/
     std::array<std::array<float, 3>, 3> tringlePoints = {{
-      Cube.vertices[0],
-      Cube.vertices[1],
-      Cube.vertices[2]
+      Cube.vertices[(Cube.faces[0][0][1])],
+      Cube.vertices[(Cube.faces[0][1][1])],
+      Cube.vertices[(Cube.faces[0][2][1])]
     }};
+    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][3])];
+
+    std::cout << Cube.faces[0][0][0] << ", " << Cube.faces[0][0][1] << ", " << Cube.faces[0][0][2] << "\n";
+    //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
 
     intersectDistance = get_magnitude(get_intersection_point(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints));
 
