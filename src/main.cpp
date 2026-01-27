@@ -172,14 +172,14 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
 
     /*TEMP TRIANGLE*/
     std::array<std::array<float, 3>, 3> tringlePoints = {{
-      Cube.vertices[(Cube.faces[0][0][0])-1],
-      Cube.vertices[(Cube.faces[0][1][0])-1],
-      Cube.vertices[(Cube.faces[0][2][0])-1]
+      Cube.vertices[(Cube.faces[0][0][0])],
+      Cube.vertices[(Cube.faces[0][1][0])],
+      Cube.vertices[(Cube.faces[0][2][0])]
       //{{1, 1, 1}},
       //{{-1, 1, 1}},
       //{{0, 1, -1}}
     }};
-    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])-1]; //{0, -1, 0};
+    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])]; //{0, -1, 0};
 
     //std::cout << Cube.vertices[1][0] << ", " << Cube.vertices[1][1] << ", " << Cube.vertices[1][2] << "\n";
    // std::cout << Cube.vertices[2][0] << ", " << Cube.vertices[2][1] << ", " << Cube.vertices[2][2] << "\n";
