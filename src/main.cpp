@@ -4,7 +4,7 @@
 #include <array>
 #include <cmath>
 #include <string.h>
-#include "parser.h"
+#include "io-utils.h"
 #include "vector-utils.h"
 
 #define WINDOW_WIDTH 640
@@ -47,6 +47,11 @@ int main(int argc, char* argv[]){
 
    Carrot = load_object("carrot.obj", 0, 100); // add angle? texture? lightSource?
    Cube = load_object("testcube.obj", 100, 0);
+
+   int argLen = 0;
+   std::vector<std::string> arge;
+
+   std::tie(argLen, arge) = io();
 
 
    while (running) {
