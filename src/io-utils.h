@@ -186,5 +186,17 @@ std::tuple<int, std::vector<std::string>> io(void) {
     
 }
 
+/*
+    
+   int argLen = 0;
+   std::vector<std::string> arge;
+
+   std::tie(argLen, arge) = io();
+   std::cout << "\nYou entered " << arge.size() << " words:\n";
+
+   for (const std::string& element : arge) {
+      std::cout << element << std::endl;
+   }
+*/
 
 #endif

@@ -26,6 +26,8 @@ ObjectData Cube;
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
+
+
    SDL_Init(SDL_INIT_VIDEO);
 
    SDL_Window* window = SDL_CreateWindow("Amazing window that is only possible because Elijah is the GOAT", 800, 600, 0);
@@ -48,10 +50,7 @@ int main(int argc, char* argv[]){
    Carrot = load_object("carrot.obj", 0, 100); // add angle? texture? lightSource?
    Cube = load_object("testcube.obj", 100, 0);
 
-   int argLen = 0;
-   std::vector<std::string> arge;
 
-   std::tie(argLen, arge) = io();
 
 
    while (running) {
