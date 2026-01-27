@@ -52,6 +52,9 @@ struct ObjectData {
         Polygonal face element
         f 1 2 3
         f 3/1 4/2 5/3
+
+        f v1/vt1/vn1 
+        obj.faces[changes vertically][changes chunks horizontally][changes between slashes]
     */
     std::vector<std::array<std::array<int, 3>, 3>> faces;
     int facesSize = 0;
