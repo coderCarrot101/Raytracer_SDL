@@ -152,6 +152,33 @@ bool moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDir
    }
 }
 
+std::array<float, 3> trace_face(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+   /*TEMP TRIANGLE
+    std::array<std::array<float, 3>, 3> tringlePoints = {{
+      Cube.vertices[(Cube.faces[0][0][0])],
+      Cube.vertices[(Cube.faces[0][1][0])],
+      Cube.vertices[(Cube.faces[0][2][0])]
+      {{1, 1, 1}},
+      {{-1, 1, 1}},
+      {{0, 1, -1}}
+    }};
+    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])]; {0, -1, 0};*/
+
+    //std::cout << Cube.vertices[1][0] << ", " << Cube.vertices[1][1] << ", " << Cube.vertices[1][2] << "\n";
+   // std::cout << Cube.vertices[2][0] << ", " << Cube.vertices[2][1] << ", " << Cube.vertices[2][2] << "\n";
+    //std::cout << Cube.vertices[3][0] << ", " << Cube.vertices[3][1] << ", " << Cube.vertices[3][2] << "\n" << "\n";
+   // std::cout << Cube.vertex_normals[(Cube.faces[0][0][2])][0] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])-1][1] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])][2] << "\n" << "\n";
+    //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
+    float intersectDistance = get_magnitude(get_intersection_point(rayOrigin, rayDirection, triangleNormal, trianglePoints));
+    
+    if (moller_trumbore(rayOrigin, rayDirection, triangleNormal, trianglePoints)){
+      //colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
+      return multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
+    } else {
+      return {0, 0, 0};
+    }
+}
+
 SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
     std::array<float, 3> cameraPosition; 
@@ -160,41 +187,38 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::array<float, 3> rayDirectionVector;
     std::array<float, 3> imagePlanePointPreRotation;
     std::array<float, 3> colorRGB;
+    std::vector<float> intersectDistanceList;
     float intersectDistance;
 
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
     float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
 
-    cameraPosition = {0, -4, 0};
+          float smallest = 999;
+      float smallestIndex;
+
+    cameraPosition = {0, -3, 0};
     imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 32, -((float)pixelY-(screenHeight/2))};
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
-    /*TEMP TRIANGLE*/
-    std::array<std::array<float, 3>, 3> tringlePoints = {{
-      Cube.vertices[(Cube.faces[0][0][0])],
-      Cube.vertices[(Cube.faces[0][1][0])],
-      Cube.vertices[(Cube.faces[0][2][0])]
-      //{{1, 1, 1}},
-      //{{-1, 1, 1}},
-      //{{0, 1, -1}}
-    }};
-    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])]; //{0, -1, 0};
-
-    //std::cout << Cube.vertices[1][0] << ", " << Cube.vertices[1][1] << ", " << Cube.vertices[1][2] << "\n";
-   // std::cout << Cube.vertices[2][0] << ", " << Cube.vertices[2][1] << ", " << Cube.vertices[2][2] << "\n";
-    //std::cout << Cube.vertices[3][0] << ", " << Cube.vertices[3][1] << ", " << Cube.vertices[3][2] << "\n" << "\n";
-   // std::cout << Cube.vertex_normals[(Cube.faces[0][0][2])][0] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])-1][1] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])][2] << "\n" << "\n";
-    //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
-
-    intersectDistance = get_magnitude(get_intersection_point(rayPosition, rayDirectionVector, triangleNormal, tringlePoints));
-
-    if (moller_trumbore(rayPosition, rayDirectionVector, triangleNormal, tringlePoints)){
-      //colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
-      colorRGB = {255, 0, 0};
-    } else {
-      colorRGB = {0, 0, 0};
+    for (int i = 0; i < Cube.facesSize; i++){
+      intersectDistanceList.push_back(get_magnitude((get_intersection_point(rayPosition, rayDirectionVector, Cube.vertex_normals[Cube.faces[i][0][3]], {Cube.vertices[Cube.faces[i][0][0]], Cube.vertices[Cube.faces[i][1][0]], Cube.vertices[Cube.faces[i][2][0]]}))));
     }
+
+    for (int i = 0; i < intersectDistanceList.size(); i++){
+      if (intersectDistanceList[i] < smallest){
+         smallest = intersectDistanceList[i];
+         smallestIndex = i;
+      }
+    }
+    
+    for (int i = 0; i < Cube.facesSize; i++){
+      colorRGB = trace_face(rayPosition, rayDirectionVector, Cube.vertex_normals[Cube.faces[smallestIndex][0][3]], {Cube.vertices[Cube.faces[smallestIndex][0][0]], Cube.vertices[Cube.faces[smallestIndex][1][0]], Cube.vertices[Cube.faces[smallestIndex][2][0]]});
+      if (colorRGB != std::array<float, 3> {0, 0, 0}){
+         return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
+      }
+    }
+
     return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
 }
 
