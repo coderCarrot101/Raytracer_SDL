@@ -165,26 +165,33 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
     float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
 
-    cameraPosition = {0, 0, 1};
+    cameraPosition = {0, -4, 0};
     imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 32, -((float)pixelY-(screenHeight/2))};
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
     /*TEMP TRIANGLE*/
     std::array<std::array<float, 3>, 3> tringlePoints = {{
-      Cube.vertices[(Cube.faces[0][0][1])],
-      Cube.vertices[(Cube.faces[0][1][1])],
-      Cube.vertices[(Cube.faces[0][2][1])]
+      Cube.vertices[(Cube.faces[0][0][0])-1],
+      Cube.vertices[(Cube.faces[0][1][0])-1],
+      Cube.vertices[(Cube.faces[0][2][0])-1]
+      //{{1, 1, 1}},
+      //{{-1, 1, 1}},
+      //{{0, 1, -1}}
     }};
-    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][3])];
+    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])-1]; //{0, -1, 0};
 
-    std::cout << Cube.faces[0][0][0] << ", " << Cube.faces[0][0][1] << ", " << Cube.faces[0][0][2] << "\n";
+    //std::cout << Cube.vertices[1][0] << ", " << Cube.vertices[1][1] << ", " << Cube.vertices[1][2] << "\n";
+   // std::cout << Cube.vertices[2][0] << ", " << Cube.vertices[2][1] << ", " << Cube.vertices[2][2] << "\n";
+    //std::cout << Cube.vertices[3][0] << ", " << Cube.vertices[3][1] << ", " << Cube.vertices[3][2] << "\n" << "\n";
+   // std::cout << Cube.vertex_normals[(Cube.faces[0][0][2])][0] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])-1][1] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])][2] << "\n" << "\n";
     //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
 
-    intersectDistance = get_magnitude(get_intersection_point(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints));
+    intersectDistance = get_magnitude(get_intersection_point(rayPosition, rayDirectionVector, triangleNormal, tringlePoints));
 
-    if (moller_trumbore(rayPosition, rayDirectionVector, {0, 1, 0}, tringlePoints)){
-      colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
+    if (moller_trumbore(rayPosition, rayDirectionVector, triangleNormal, tringlePoints)){
+      //colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
+      colorRGB = {255, 0, 0};
     } else {
       colorRGB = {0, 0, 0};
     }
