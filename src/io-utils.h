@@ -1,18 +1,24 @@
 
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef IO_UTILS_H
+#define IO_UTILS_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h> 
 
 #include <SDL3/SDL.h>
+
 #include <iostream>
+#include <iterator>
 #include <cstdint>
 #include <array>
 #include <vector>
 #include <cmath>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
-#include <time.h> 
+#include <sstream>
+
+
 
 const int CAPACITY = 100;
 
@@ -77,6 +83,7 @@ loads object data into an ObjectData struct
 ex: ObjectData cube = load_object("cube.obj");
 */
 ObjectData load_object(const char* path, int xPos, int yPos) {
+
     clock_t start = clock();
     
     ObjectData object;
@@ -157,28 +164,27 @@ ObjectData load_object(const char* path, int xPos, int yPos) {
     return object;
 }
 
+
+
+std::tuple<int, std::vector<std::string>> io(void) {
+
+    std::string input_line;
+    std::string temp_word;
+    std::vector<std::string> words_array;
+
+    std::cout << "user> ";
+
+    std::getline(std::cin, input_line);
+    std::istringstream ss(input_line);
+
+    while (ss >> temp_word) {
+        words_array.push_back(temp_word); // Add each word to the vector
+    }
+    int length = std::size(words_array);
+
+    return std::make_tuple(length, words_array);
+    
+}
+
+
 #endif
-
-
-/*
-In case I want this - Elijah
-
- else if (strcmp(lineHeader, "l") == 0) {
-
-            char* buffer = nullptr;
-
-            printf("l ");
-            for (int i = 0; i < strlen(lineHeader); i++) {
-                char ch = lineHeader[i];
-                if (isdigit(ch) == 0) {
-                    object.line_element.resize(object.lineElementSize + 1);
-                    object.line_element[object.lineElementSize] = (int)(ch - 48);
-                    object.lineElementSize++;
-                    printf("%d ", object.line_element[i]);
-                }
-
-            }
-
-
-        }
-*/
