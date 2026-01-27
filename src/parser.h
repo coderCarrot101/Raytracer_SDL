@@ -118,7 +118,15 @@ ObjectData load_object(const char* path, int xPos, int yPos) {
 
             object.faces.resize(object.facesSize + 1);
             fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &object.faces[object.facesSize][0][0], &object.faces[object.facesSize][0][1], &object.faces[object.facesSize][0][2], &object.faces[object.facesSize][1][0], &object.faces[object.facesSize][1][1], &object.faces[object.facesSize][1][2], &object.faces[object.facesSize][2][0], &object.faces[object.facesSize][2][1], &object.faces[object.facesSize][2][2]);
-            //printf("f %d/%d/%d %d/%d/%d %d/%d/%d\n", object.faces[object.facesSize][0][0], object.faces[object.facesSize][0][1], object.faces[object.facesSize][0][2], object.faces[object.facesSize][1][0], object.faces[object.facesSize][1][1], object.faces[object.facesSize][1][2], object.faces[object.facesSize][2][0], object.faces[object.facesSize][2][1], object.faces[object.facesSize][2][2]);
+            object.faces[object.facesSize][0][0] -= 1;
+            object.faces[object.facesSize][0][1] -= 1;
+            object.faces[object.facesSize][0][2] -= 1;
+            object.faces[object.facesSize][1][0] -= 1;
+            object.faces[object.facesSize][1][1] -= 1;
+            object.faces[object.facesSize][1][2] -= 1;
+            object.faces[object.facesSize][2][0] -= 1;
+            object.faces[object.facesSize][2][1] -= 1;
+            object.faces[object.facesSize][2][2] -= 1;
             object.facesSize++;
 
         }else if (strcmp(lineHeader, "vp") == 0) {
