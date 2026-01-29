@@ -26,7 +26,7 @@ ObjectData Cube;
 
 //all code should be ran from the MAIN CODE section - Elijah
 int main(int argc, char* argv[]){
-
+   //TODO: add rasterization - Elijah
 
    SDL_Init(SDL_INIT_VIDEO);
 
