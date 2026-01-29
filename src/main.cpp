@@ -132,31 +132,43 @@ bool inside_triangle(std::array<float, 3> rayOrigin, std::array<float, 3> rayDir
    }
 }
 
-bool moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+float moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+   const float epsilon = 1e-6f;
+
    std::array<float, 3> e1 = subtract_vectors(trianglePoints[1], trianglePoints[0]);
    std::array<float, 3> e2 = subtract_vectors(trianglePoints[2], trianglePoints[0]);
 
    std::array<float, 3> p = cross_product(rayDirection, e2);
+
    float det = dot_product(e1, p);
-
-   std::array<float, 3> t = subtract_vectors(rayOrigin, trianglePoints[0]);
-   float uFloat = dot_product(t, p)/det;
-
-   std::array<float, 3> q = cross_product(t, e1);
-
-   float vFloat = dot_product(rayDirection, q)/det;
-   float tFloat = dot_product(e2, q)/det;
-
-   /*std::array<float, 3> intersectionPoint = add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, tFloat));*/
-
-   if (uFloat >= 0 && vFloat >= 0 && ((uFloat+vFloat) <= 1) && tFloat > 0){
-      return true;
-   } else {
-      return false;
+   if (det < epsilon){ //backface culling included
+      return 999;
    }
+
+   std::array<float, 3> tVect = subtract_vectors(rayOrigin, trianglePoints[0]);
+   
+   float u = dot_product(tVect, p)/det;
+   if(u < 0 || u > 1){
+      return 999;
+   }
+
+   std::array<float, 3> q = cross_product(tVect, e1);
+
+   float v = dot_product(rayDirection, q)/det;
+   if(v < 0 || (u + v) > 1){
+      return 999;
+   }
+   
+   float t = dot_product(e2, q)/det;
+   if(t <= 0){
+      return 999;
+   }
+
+   return t;
+   /*std::array<float, 3> intersectionPoint = add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, tFloat));*/
 }
 
-std::array<float, 3> trace_face(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+std::array<float, 3> trace_face(float smallest){
    /*TEMP TRIANGLE
     std::array<std::array<float, 3>, 3> tringlePoints = {{
       Cube.vertices[(Cube.faces[0][0][0])],
@@ -173,15 +185,35 @@ std::array<float, 3> trace_face(std::array<float, 3> rayOrigin, std::array<float
     //std::cout << Cube.vertices[3][0] << ", " << Cube.vertices[3][1] << ", " << Cube.vertices[3][2] << "\n" << "\n";
    // std::cout << Cube.vertex_normals[(Cube.faces[0][0][2])][0] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])-1][1] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])][2] << "\n" << "\n";
     //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
-    float intersectDistance = get_magnitude(get_intersection_point(rayOrigin, rayDirection, triangleNormal, trianglePoints));
-    
-    if (moller_trumbore(rayOrigin, rayDirection, triangleNormal, trianglePoints)){
-      //colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
-      return multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
+    if (smallest < 900){
+      //return {255, 0, 0};
+      return multiply_vector_by_scalar({255,255,255}, (4/powf(smallest, 2)));
     } else {
       return {0, 0, 0};
     }
 }
+
+ std::vector<float> list_distances(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, ObjectData object){
+   std::vector<float> intersectDistanceList;
+   std::array<float, 3> intersectPoint;
+   float intersectDistance;
+   for (int i = 0; i < object.facesSize; i++){
+      intersectDistanceList.push_back(moller_trumbore(rayOrigin, rayDirection, object.vertex_normals[object.faces[i][0][3]], {object.vertices[object.faces[i][0][0]], object.vertices[object.faces[i][1][0]], object.vertices[object.faces[i][2][0]]}));
+   }
+   return intersectDistanceList;
+ }
+
+ float get_smallest(std::vector<float> list){
+   float smallest = 999;
+   int smallestIndex;
+   for (int i = 0; i < list.size(); i++){
+      if (list[i] < smallest){
+         smallest = list[i];
+         smallestIndex = i;
+      }
+    }
+    return smallest;
+ }
 
 SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
@@ -197,31 +229,17 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
     float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
 
-          float smallest = 999;
-      float smallestIndex;
-
-    cameraPosition = {0, -3, 0};
-    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 32, -((float)pixelY-(screenHeight/2))};
+    cameraPosition = {2, -5, 2};
+    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 120, -((float)pixelY-(screenHeight/2))};
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
-    for (int i = 0; i < Cube.facesSize; i++){
-      intersectDistanceList.push_back(get_magnitude((get_intersection_point(rayPosition, rayDirectionVector, Cube.vertex_normals[Cube.faces[i][0][3]], {Cube.vertices[Cube.faces[i][0][0]], Cube.vertices[Cube.faces[i][1][0]], Cube.vertices[Cube.faces[i][2][0]]}))));
-    }
+    float smallest = get_smallest(list_distances(rayPosition, rayDirectionVector, Cube));
 
-    for (int i = 0; i < intersectDistanceList.size(); i++){
-      if (intersectDistanceList[i] < smallest){
-         smallest = intersectDistanceList[i];
-         smallestIndex = i;
-      }
-    }
-    
-    for (int i = 0; i < Cube.facesSize; i++){
-      colorRGB = trace_face(rayPosition, rayDirectionVector, Cube.vertex_normals[Cube.faces[smallestIndex][0][3]], {Cube.vertices[Cube.faces[smallestIndex][0][0]], Cube.vertices[Cube.faces[smallestIndex][1][0]], Cube.vertices[Cube.faces[smallestIndex][2][0]]});
-      if (colorRGB != std::array<float, 3> {0, 0, 0}){
-         return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
-      }
-    }
+    colorRGB = trace_face(smallest);
+    //if (colorRGB != std::array<float, 3> {0, 0, 0}){
+    //   return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
+    //}
 
     return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
 }
