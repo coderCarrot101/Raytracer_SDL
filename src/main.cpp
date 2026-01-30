@@ -7,8 +7,8 @@
 #include "io-utils.h"
 #include "vector-utils.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1920/2
+#define WINDOW_HEIGHT 1080/2
 
 int is_running = false;        
 int color[] = {255, 255, 255};
@@ -30,11 +30,11 @@ int main(int argc, char* argv[]){
 
    SDL_Init(SDL_INIT_VIDEO);
 
-   SDL_Window* window = SDL_CreateWindow("Amazing window that is only possible because Elijah is the GOAT", 800, 600, 0);
+   SDL_Window* window = SDL_CreateWindow("PHREEEEEEEEEEET", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
-   const int W = 320;
-   const int H = 240;
+   const int W = WINDOW_WIDTH;
+   const int H = WINDOW_HEIGHT;
 
    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, W, H);
 
@@ -132,7 +132,7 @@ bool inside_triangle(std::array<float, 3> rayOrigin, std::array<float, 3> rayDir
    }
 }
 
-float moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+float moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<std::array<float, 3>, 3> trianglePoints){
    const float epsilon = 1e-6f;
 
    std::array<float, 3> e1 = subtract_vectors(trianglePoints[1], trianglePoints[0]);
@@ -165,32 +165,6 @@ float moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDi
    }
 
    return t;
-   /*std::array<float, 3> intersectionPoint = add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, tFloat));*/
-}
-
-std::array<float, 3> trace_face(float smallest){
-   /*TEMP TRIANGLE
-    std::array<std::array<float, 3>, 3> tringlePoints = {{
-      Cube.vertices[(Cube.faces[0][0][0])],
-      Cube.vertices[(Cube.faces[0][1][0])],
-      Cube.vertices[(Cube.faces[0][2][0])]
-      {{1, 1, 1}},
-      {{-1, 1, 1}},
-      {{0, 1, -1}}
-    }};
-    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])]; {0, -1, 0};*/
-
-    //std::cout << Cube.vertices[1][0] << ", " << Cube.vertices[1][1] << ", " << Cube.vertices[1][2] << "\n";
-   // std::cout << Cube.vertices[2][0] << ", " << Cube.vertices[2][1] << ", " << Cube.vertices[2][2] << "\n";
-    //std::cout << Cube.vertices[3][0] << ", " << Cube.vertices[3][1] << ", " << Cube.vertices[3][2] << "\n" << "\n";
-   // std::cout << Cube.vertex_normals[(Cube.faces[0][0][2])][0] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])-1][1] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])][2] << "\n" << "\n";
-    //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
-    if (smallest < 900){
-      //return {255, 0, 0};
-      return multiply_vector_by_scalar({255,255,255}, (4/powf(smallest, 2)));
-    } else {
-      return {0, 0, 0};
-    }
 }
 
  std::vector<float> list_distances(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, ObjectData object){
@@ -198,26 +172,27 @@ std::array<float, 3> trace_face(float smallest){
    std::array<float, 3> intersectPoint;
    float intersectDistance;
    for (int i = 0; i < object.facesSize; i++){
-      intersectDistanceList.push_back(moller_trumbore(rayOrigin, rayDirection, object.vertex_normals[object.faces[i][0][3]], {object.vertices[object.faces[i][0][0]], object.vertices[object.faces[i][1][0]], object.vertices[object.faces[i][2][0]]}));
+      intersectDistanceList.push_back(moller_trumbore(rayOrigin, rayDirection, {object.vertices[object.faces[i][0][0]], object.vertices[object.faces[i][1][0]], object.vertices[object.faces[i][2][0]]}));
    }
    return intersectDistanceList;
  }
 
- float get_smallest(std::vector<float> list){
+ float get_smallest(std::vector<float> list, ObjectData object, std::array<float, 3> lightPosition, std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection){
    float smallest = 999;
    int smallestIndex;
+   
    for (int i = 0; i < list.size(); i++){
       if (list[i] < smallest){
          smallest = list[i];
-         smallestIndex = i;
+         smallestIndex = 1;
       }
     }
-    return smallest;
+    return get_magnitude(subtract_vectors(add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, smallest)), lightPosition));
  }
 
 SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
-    std::array<float, 3> cameraPosition; 
+    std::array<float, 3> cameraPosition = {1.5f, -4.0f, 1.5f}; 
     std::array<float, 3> cameraDirectionVector;
     std::array<float, 3> rayPosition;
     std::array<float, 3> rayDirectionVector;
@@ -226,20 +201,16 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::vector<float> intersectDistanceList;
     float intersectDistance;
 
-    std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
-    float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
+    std::array<float, 3> lightPosition = {-2, -3, 2}; /*TEMPORARY, will add better lighting later - Ray*/ 
+    float lightIntensity = 4; /*TEMPORARY, will add better lighting later - Ray*/
 
-    cameraPosition = {2, -5, 2};
-    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 120, -((float)pixelY-(screenHeight/2))};
+    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), (float)screenWidth/2, -((float)pixelY-(screenHeight/2))};
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
-    float smallest = get_smallest(list_distances(rayPosition, rayDirectionVector, Cube));
+    float smallest = get_smallest(list_distances(rayPosition, rayDirectionVector, Cube), Cube, lightPosition, rayPosition, rayDirectionVector);
 
-    colorRGB = trace_face(smallest);
-    //if (colorRGB != std::array<float, 3> {0, 0, 0}){
-    //   return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
-    //}
+    colorRGB = multiply_vector_by_scalar({255,255,255}, (lightIntensity/powf(smallest, 2)));
 
     return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
 }
