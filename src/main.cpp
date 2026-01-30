@@ -7,8 +7,8 @@
 #include "io-utils.h"
 #include "vector-utils.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1920/2
+#define WINDOW_HEIGHT 1080/2
 
 int is_running = false;        
 int color[] = {255, 255, 255};
@@ -30,11 +30,11 @@ int main(int argc, char* argv[]){
 
    SDL_Init(SDL_INIT_VIDEO);
 
-   SDL_Window* window = SDL_CreateWindow("Amazing window that is only possible because Elijah is the GOAT", 800, 600, 0);
+   SDL_Window* window = SDL_CreateWindow("PHREEEEEEEEEEET", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 
-   const int W = 320;
-   const int H = 240;
+   const int W = WINDOW_WIDTH;
+   const int H = WINDOW_HEIGHT;
 
    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, W, H);
 
@@ -132,60 +132,67 @@ bool inside_triangle(std::array<float, 3> rayOrigin, std::array<float, 3> rayDir
    }
 }
 
-bool moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
+float moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<std::array<float, 3>, 3> trianglePoints){
+   const float epsilon = 1e-6f;
+
    std::array<float, 3> e1 = subtract_vectors(trianglePoints[1], trianglePoints[0]);
    std::array<float, 3> e2 = subtract_vectors(trianglePoints[2], trianglePoints[0]);
 
    std::array<float, 3> p = cross_product(rayDirection, e2);
+
    float det = dot_product(e1, p);
-
-   std::array<float, 3> t = subtract_vectors(rayOrigin, trianglePoints[0]);
-   float uFloat = dot_product(t, p)/det;
-
-   std::array<float, 3> q = cross_product(t, e1);
-
-   float vFloat = dot_product(rayDirection, q)/det;
-   float tFloat = dot_product(e2, q)/det;
-
-   /*std::array<float, 3> intersectionPoint = add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, tFloat));*/
-
-   if (uFloat >= 0 && vFloat >= 0 && ((uFloat+vFloat) <= 1) && tFloat > 0){
-      return true;
-   } else {
-      return false;
+   if (det < epsilon){ //backface culling included
+      return 999;
    }
+
+   std::array<float, 3> tVect = subtract_vectors(rayOrigin, trianglePoints[0]);
+   
+   float u = dot_product(tVect, p)/det;
+   if(u < 0 || u > 1){
+      return 999;
+   }
+
+   std::array<float, 3> q = cross_product(tVect, e1);
+
+   float v = dot_product(rayDirection, q)/det;
+   if(v < 0 || (u + v) > 1){
+      return 999;
+   }
+   
+   float t = dot_product(e2, q)/det;
+   if(t <= 0){
+      return 999;
+   }
+
+   return t;
 }
 
-std::array<float, 3> trace_face(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, std::array<float, 3> triangleNormal, std::array<std::array<float, 3>, 3> trianglePoints){
-   /*TEMP TRIANGLE
-    std::array<std::array<float, 3>, 3> tringlePoints = {{
-      Cube.vertices[(Cube.faces[0][0][0])],
-      Cube.vertices[(Cube.faces[0][1][0])],
-      Cube.vertices[(Cube.faces[0][2][0])]
-      {{1, 1, 1}},
-      {{-1, 1, 1}},
-      {{0, 1, -1}}
-    }};
-    std::array<float, 3> triangleNormal = Cube.vertex_normals[(Cube.faces[0][0][2])]; {0, -1, 0};*/
+ std::vector<float> list_distances(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, ObjectData object){
+   std::vector<float> intersectDistanceList;
+   std::array<float, 3> intersectPoint;
+   float intersectDistance;
+   for (int i = 0; i < object.facesSize; i++){
+      intersectDistanceList.push_back(moller_trumbore(rayOrigin, rayDirection, {object.vertices[object.faces[i][0][0]], object.vertices[object.faces[i][1][0]], object.vertices[object.faces[i][2][0]]}));
+   }
+   return intersectDistanceList;
+ }
 
-    //std::cout << Cube.vertices[1][0] << ", " << Cube.vertices[1][1] << ", " << Cube.vertices[1][2] << "\n";
-   // std::cout << Cube.vertices[2][0] << ", " << Cube.vertices[2][1] << ", " << Cube.vertices[2][2] << "\n";
-    //std::cout << Cube.vertices[3][0] << ", " << Cube.vertices[3][1] << ", " << Cube.vertices[3][2] << "\n" << "\n";
-   // std::cout << Cube.vertex_normals[(Cube.faces[0][0][2])][0] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])-1][1] << ", " << Cube.vertex_normals[(Cube.faces[0][0][2])][2] << "\n" << "\n";
-    //std::cout << triangleNormal[0] << ", " << triangleNormal[1] << ", " << triangleNormal[2] << "\n";
-    float intersectDistance = get_magnitude(get_intersection_point(rayOrigin, rayDirection, triangleNormal, trianglePoints));
-    
-    if (moller_trumbore(rayOrigin, rayDirection, triangleNormal, trianglePoints)){
-      //colorRGB = multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
-      return multiply_vector_by_scalar({255,255,255}, (1/powf(intersectDistance, 2)));
-    } else {
-      return {0, 0, 0};
+ float get_smallest(std::vector<float> list, ObjectData object, std::array<float, 3> lightPosition, std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection){
+   float smallest = 999;
+   int smallestIndex;
+   
+   for (int i = 0; i < list.size(); i++){
+      if (list[i] < smallest){
+         smallest = list[i];
+         smallestIndex = 1;
+      }
     }
-}
+    return get_magnitude(subtract_vectors(add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, smallest)), lightPosition));
+ }
 
 SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
-    std::array<float, 3> cameraPosition; 
+    std::array<float, 3> cameraPosition = {1.5f, -4.0f, 1.5f}; 
     std::array<float, 3> cameraDirectionVector;
     std::array<float, 3> rayPosition;
     std::array<float, 3> rayDirectionVector;
@@ -194,34 +201,16 @@ SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeig
     std::vector<float> intersectDistanceList;
     float intersectDistance;
 
-    std::array<float, 3> lightPosition; /*TEMPORARY, will add better lighting later - Ray*/ 
-    float lightIntensity; /*TEMPORARY, will add better lighting later - Ray*/
+    std::array<float, 3> lightPosition = {-2, -3, 2}; /*TEMPORARY, will add better lighting later - Ray*/ 
+    float lightIntensity = 4; /*TEMPORARY, will add better lighting later - Ray*/
 
-          float smallest = 999;
-      float smallestIndex;
-
-    cameraPosition = {0, -3, 0};
-    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), 32, -((float)pixelY-(screenHeight/2))};
+    imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), (float)screenWidth/2, -((float)pixelY-(screenHeight/2))};
     rayPosition = cameraPosition;
     rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
 
-    for (int i = 0; i < Cube.facesSize; i++){
-      intersectDistanceList.push_back(get_magnitude((get_intersection_point(rayPosition, rayDirectionVector, Cube.vertex_normals[Cube.faces[i][0][3]], {Cube.vertices[Cube.faces[i][0][0]], Cube.vertices[Cube.faces[i][1][0]], Cube.vertices[Cube.faces[i][2][0]]}))));
-    }
+    float smallest = get_smallest(list_distances(rayPosition, rayDirectionVector, Cube), Cube, lightPosition, rayPosition, rayDirectionVector);
 
-    for (int i = 0; i < intersectDistanceList.size(); i++){
-      if (intersectDistanceList[i] < smallest){
-         smallest = intersectDistanceList[i];
-         smallestIndex = i;
-      }
-    }
-    
-    for (int i = 0; i < Cube.facesSize; i++){
-      colorRGB = trace_face(rayPosition, rayDirectionVector, Cube.vertex_normals[Cube.faces[smallestIndex][0][3]], {Cube.vertices[Cube.faces[smallestIndex][0][0]], Cube.vertices[Cube.faces[smallestIndex][1][0]], Cube.vertices[Cube.faces[smallestIndex][2][0]]});
-      if (colorRGB != std::array<float, 3> {0, 0, 0}){
-         return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
-      }
-    }
+    colorRGB = multiply_vector_by_scalar({255,255,255}, (lightIntensity/powf(smallest, 2)));
 
     return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
 }
