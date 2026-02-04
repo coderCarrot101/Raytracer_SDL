@@ -30,7 +30,8 @@ int main(int argc, char *argv[]) {
         if (cmd_buffer) {
             uint32_t w, h;
             // Get the texture for the current frame
-            SDL_GPUTexture* swapchain_tex = SDL_AcquireGPUSwapchainTexture(cmd_buffer, window, &w, &h);
+            SDL_GPUTexture* swapchain_tex;
+            SDL_AcquireGPUSwapchainTexture(cmd_buffer, window, &swapchain_tex, &w, &h);
 
             if (swapchain_tex) {
                 SDL_GPUColorTargetInfo color_target = { 0 };
