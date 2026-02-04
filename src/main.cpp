@@ -6,6 +6,7 @@
 #include <string.h>
 #include "io-utils.h"
 #include "vector-utils.h"
+#include "shaders.h"
 
 #define WINDOW_WIDTH 1920/2
 #define WINDOW_HEIGHT 1080/2
@@ -142,75 +143,82 @@ float moller_trumbore(std::array<float, 3> rayOrigin, std::array<float, 3> rayDi
 
    float det = dot_product(e1, p);
    if (det < epsilon){ //backface culling included
-      return 999;
+      return false;
    }
 
    std::array<float, 3> tVect = subtract_vectors(rayOrigin, trianglePoints[0]);
    
    float u = dot_product(tVect, p)/det;
    if(u < 0 || u > 1){
-      return 999;
+      return false;
    }
 
    std::array<float, 3> q = cross_product(tVect, e1);
 
    float v = dot_product(rayDirection, q)/det;
    if(v < 0 || (u + v) > 1){
-      return 999;
+      return false;
    }
    
    float t = dot_product(e2, q)/det;
-   if(t <= 0){
-      return 999;
+   if(t <= epsilon){
+      return false;
    }
 
    return t;
 }
 
- std::vector<float> list_distances(std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection, ObjectData object){
-   std::vector<float> intersectDistanceList;
-   std::array<float, 3> intersectPoint;
-   float intersectDistance;
-   for (int i = 0; i < object.facesSize; i++){
-      intersectDistanceList.push_back(moller_trumbore(rayOrigin, rayDirection, {object.vertices[object.faces[i][0][0]], object.vertices[object.faces[i][1][0]], object.vertices[object.faces[i][2][0]]}));
-   }
-   return intersectDistanceList;
- }
-
- float get_smallest(std::vector<float> list, ObjectData object, std::array<float, 3> lightPosition, std::array<float, 3> rayOrigin, std::array<float, 3> rayDirection){
-   float smallest = 999;
-   int smallestIndex;
-   
-   for (int i = 0; i < list.size(); i++){
-      if (list[i] < smallest){
-         smallest = list[i];
-         smallestIndex = 1;
-      }
-    }
-    return get_magnitude(subtract_vectors(add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, smallest)), lightPosition));
- }
-
 SDL_Color rays_raytracer(int pixelX, int pixelY, int screenWidth, int screenHeight) {
     // Placeholder for the GOAT's raytracer function - Ray
     std::array<float, 3> cameraPosition = {1.5f, -4.0f, 1.5f}; 
     std::array<float, 3> cameraDirectionVector;
-    std::array<float, 3> rayPosition;
-    std::array<float, 3> rayDirectionVector;
+    std::array<float, 3> rayOrigin;
+    std::array<float, 3> rayDirection;
     std::array<float, 3> imagePlanePointPreRotation;
     std::array<float, 3> colorRGB;
-    std::vector<float> intersectDistanceList;
     float intersectDistance;
 
-    std::array<float, 3> lightPosition = {-2, -3, 2}; /*TEMPORARY, will add better lighting later - Ray*/ 
+    ObjectData object = Cube;
+
+    std::array<float, 3> lightPosition = {0, -2, 2}; /*TEMPORARY, will add better lighting later - Ray*/ 
+    std::array<float, 3> lightColor = {255, 255, 255};
+    std::array<float, 3> ambientLight = {25, 25, 50};
     float lightIntensity = 4; /*TEMPORARY, will add better lighting later - Ray*/
 
     imagePlanePointPreRotation = {(float)pixelX-(screenWidth/2), (float)screenWidth/2, -((float)pixelY-(screenHeight/2))};
-    rayPosition = cameraPosition;
-    rayDirectionVector = normalize_vector(imagePlanePointPreRotation);
+    rayOrigin = cameraPosition;
+    rayDirection = normalize_vector(imagePlanePointPreRotation);
 
-    float smallest = get_smallest(list_distances(rayPosition, rayDirectionVector, Cube), Cube, lightPosition, rayPosition, rayDirectionVector);
+    std::vector<float> intersectDistanceList;
+    std::array<float, 3> intersectPoint;
 
-    colorRGB = multiply_vector_by_scalar({255,255,255}, (lightIntensity/powf(smallest, 2)));
+    for (int i = 0; i < object.facesSize; i++){
+       intersectDistanceList.push_back(moller_trumbore(rayOrigin, rayDirection, {object.vertices[object.faces[i][0][0]], object.vertices[object.faces[i][1][0]], object.vertices[object.faces[i][2][0]]}));
+    }
+
+    float smallest = 999;
+    int smallestIndex = -1;
+   
+    for (int i = 0; i < intersectDistanceList.size(); i++){
+       if (intersectDistanceList[i] < smallest && intersectDistanceList[i] != false){
+          smallest = intersectDistanceList[i];
+          smallestIndex = i;
+       }
+    }
+
+    if (smallestIndex == -1) {
+      return SDL_Color{0, 0, 0, 255}; // background
+    }
+    
+    intersectPoint = add_vectors(rayOrigin, multiply_vector_by_scalar(rayDirection, smallest));
+    std::array<float, 3> lightVector = subtract_vectors(lightPosition, intersectPoint);
+
+    //colorRGB = multiply_vector_by_scalar({255,255,255}, light_attenuation(get_magnitude(lightVector), lightIntensity));
+    //colorRGB = diffuse_shader({255, 255, 255}, object.vertex_normals[object.faces[smallestIndex][0][2]], lightVector, lightColor);
+    //std::cout << object.vertex_normals[object.faces[smallestIndex][0][2]][0] << " " << object.vertex_normals[object.faces[smallestIndex][0][2]][1] << " " << object.vertex_normals[object.faces[smallestIndex][0][2]][2] << "\n";
+    //colorRGB = specular_shader(lightColor, lightVector, object.vertex_normals[object.faces[smallestIndex][0][2]], subtract_vectors(cameraPosition, intersectPoint), 4.0f);
+    colorRGB = final_shader_addition({0, 0, 0}, ambientLight, diffuse_shader({255, 255, 255}, object.vertex_normals[object.faces[smallestIndex][0][2]], lightVector, lightColor), specular_shader(lightColor, lightVector, object.vertex_normals[object.faces[smallestIndex][0][2]], subtract_vectors(cameraPosition, intersectPoint), 4.0f), light_attenuation(get_magnitude(lightVector), lightIntensity));
+    //colorRGB = final_shader_addition({0, 0, 0}, {0, 0, 0}, diffuse_shader({100, 100, 100}, {1, 0, 0}, {1, 0, 0}, {100, 100, 100}), specular_shader(), light_attenuation(4, 1));
 
     return SDL_Color {(unsigned char)colorRGB[0], (unsigned char)colorRGB[1], (unsigned char)colorRGB[2], 255};
 }

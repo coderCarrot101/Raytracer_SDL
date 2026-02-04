@@ -72,4 +72,13 @@ float dot_product(std::array<float, 3> vector1, std::array<float, 3> vector2){
    return output;
 }
 
+
+std::array<float, 3> clamp_vector(std::array<float, 3> vector, std::array<float, 3> floor, std::array<float, 3> ceil){
+   return {std::clamp(vector[0], floor[0], ceil[0]), std::clamp(vector[1], floor[1], ceil[1]), std::clamp(vector[2], floor[2], ceil[2])};
+}
+
+std::array<float, 3> reflect_vector(std::array<float, 3> normal, std::array<float, 3> vector){
+   return subtract_vectors(vector, multiply_vector_by_scalar(normalize_vector(normal), dot_product(vector, normalize_vector(normal)) * 2.0f));
+}
+
 #endif
