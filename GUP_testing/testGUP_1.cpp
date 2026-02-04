@@ -5,7 +5,7 @@ int main(int argc, char *argv[]) {
     // 1. Initialize Video subsystem
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
-        return 1;
+        return 2;
     }
 
     // 2. Create a window
